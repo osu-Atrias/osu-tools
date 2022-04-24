@@ -83,6 +83,9 @@ namespace PerformanceCalculator
                                                    .Distinct()
                                                    .ToHashSet();
 
+            if (mods.Any(m => m is ModClassic))
+                difficultyAdjustmentMods.Add(ruleset.CreateAllMods().Single(m => m is ModClassic).GetType());
+
             // Special case for DT/NC.
             if (mods.Any(m => m is ModDoubleTime))
                 difficultyAdjustmentMods.Add(ruleset.CreateAllMods().Single(m => m is ModNightcore).GetType());
