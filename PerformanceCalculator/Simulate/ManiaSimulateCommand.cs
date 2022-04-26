@@ -30,11 +30,6 @@ namespace PerformanceCalculator.Simulate
         [Option(Template = "-s|--score <score>", Description = "Score. An integer 0-1000000.")]
         private int? score { get; set; }
 
-        [UsedImplicitly]
-        [Option(CommandOptionType.MultipleValue, Template = "-m|--mod <mod>", Description = "One for each mod. The mods to compute the performance with."
-                                                                                            + " Values: hr, dt, fl, 4k, 5k, etc...")]
-        public override string[] Mods { get; }
-
         public override Ruleset Ruleset => new ManiaRuleset();
 
         public override void Execute()

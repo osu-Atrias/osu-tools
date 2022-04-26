@@ -13,6 +13,7 @@ using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using osu.Game.Beatmaps;
+using osu.Game.Beatmaps.Legacy;
 using osu.Game.Online.API;
 using osu.Game.Rulesets;
 using osu.Game.Rulesets.Difficulty;
@@ -44,9 +45,6 @@ namespace PerformanceCalculator.Simulate
         public virtual int Score { get; }
 
         [UsedImplicitly]
-        public virtual string[] Mods { get; }
-
-        [UsedImplicitly]
         public virtual int Misses { get; }
 
         [UsedImplicitly]
@@ -54,6 +52,10 @@ namespace PerformanceCalculator.Simulate
 
         [UsedImplicitly]
         public virtual int? Goods { get; }
+
+        [UsedImplicitly]
+        [Option(Template = "-lm|--legacy-mod <mods>", Description = "Legacy mods value from stable")]
+        public LegacyMods LegacyMods { get; }
 
         [UsedImplicitly]
         [Option(Template = "-j|--json", Description = "Output results as JSON.")]
@@ -68,9 +70,8 @@ namespace PerformanceCalculator.Simulate
             var ruleset = Ruleset;
 
             var mods = GetMods(ruleset);
-            var difficultyAdjustmentMods = NoClassicMod ? mods : LegacyHelper.ConvertToLegacyDifficultyAdjustmentMods(ruleset, mods);
             var workingBeatmap = ProcessorWorkingBeatmap.FromFileOrId(Beatmap);
-            var beatmap = workingBeatmap.GetPlayableBeatmap(ruleset.RulesetInfo, difficultyAdjustmentMods);
+            var beatmap = workingBeatmap.GetPlayableBeatmap(ruleset.RulesetInfo, mods);
 
             var beatmapMaxCombo = GetMaxCombo(beatmap);
             var maxCombo = Combo ?? (int)Math.Round(PercentCombo / 100 * beatmapMaxCombo);
@@ -79,7 +80,7 @@ namespace PerformanceCalculator.Simulate
             var accuracy = GetAccuracy(statistics);
 
             var difficultyCalculator = ruleset.CreateDifficultyCalculator(workingBeatmap);
-            var difficultyAttributes = difficultyCalculator.Calculate(difficultyAdjustmentMods);
+            var difficultyAttributes = difficultyCalculator.Calculate(mods);
             var performanceCalculator = ruleset.CreatePerformanceCalculator();
 
             var ppAttributes = performanceCalculator?.Calculate(new ScoreInfo(beatmap.BeatmapInfo, ruleset.RulesetInfo)
@@ -163,22 +164,18 @@ namespace PerformanceCalculator.Simulate
 
         protected Mod[] GetMods(Ruleset ruleset)
         {
-            if (Mods == null)
-                return Array.Empty<Mod>();
+            var result = ruleset.ConvertFromLegacyMods(LegacyMods).ToList();
 
-            var availableMods = ruleset.CreateAllMods().ToList();
-            var mods = new List<Mod>();
-
-            foreach (var modString in Mods)
+            if (!NoClassicMod)
             {
-                Mod newMod = availableMods.FirstOrDefault(m => string.Equals(m.Acronym, modString, StringComparison.CurrentCultureIgnoreCase));
-                if (newMod == null)
-                    throw new ArgumentException($"Invalid mod provided: {modString}");
+                var allMods = ruleset.CreateAllMods().ToArray();
 
-                mods.Add(newMod);
+                var classicMod = allMods.SingleOrDefault(m => m is ModClassic);
+                if (classicMod != null)
+                    result.Add(classicMod);
             }
 
-            return mods.ToArray();
+            return result.ToArray();
         }
 
         protected abstract int GetMaxCombo(IBeatmap beatmap);

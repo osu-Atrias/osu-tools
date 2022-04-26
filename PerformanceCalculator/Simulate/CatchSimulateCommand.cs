@@ -32,11 +32,6 @@ namespace PerformanceCalculator.Simulate
         public override double PercentCombo { get; } = 100;
 
         [UsedImplicitly]
-        [Option(CommandOptionType.MultipleValue, Template = "-m|--mod <mod>", Description = "One for each mod. The mods to compute the performance with."
-                                                                                            + " Values: hr, dt, hd, fl, ez, etc...")]
-        public override string[] Mods { get; }
-
-        [UsedImplicitly]
         [Option(Template = "-X|--misses <misses>", Description = "Number of misses. Defaults to 0.")]
         public override int Misses { get; }
 
