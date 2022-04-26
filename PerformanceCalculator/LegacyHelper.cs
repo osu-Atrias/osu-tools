@@ -86,6 +86,10 @@ namespace PerformanceCalculator
                                       .Distinct()
                                       .ToHashSet();
 
+            // Special case to allow either DT or NC.
+            if (mods.Any(m => m is ModDoubleTime))
+                allowedMods.Add(allMods.Single(m => m is ModNightcore).GetType());
+
             var result = new List<Mod>();
 
             var classicMod = allMods.SingleOrDefault(m => m is ModClassic);
