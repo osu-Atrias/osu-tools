@@ -67,10 +67,9 @@ namespace PerformanceCalculator.Simulate
         {
             var ruleset = Ruleset;
 
-            var mods = GetMods(ruleset);
-            var difficultyAdjustmentMods = NoClassicMod ? mods : LegacyHelper.ConvertToLegacyDifficultyAdjustmentMods(ruleset, mods);
+            var mods = NoClassicMod ? GetMods(ruleset) : LegacyHelper.ConvertToLegacyDifficultyAdjustmentMods(ruleset, GetMods(ruleset));
             var workingBeatmap = ProcessorWorkingBeatmap.FromFileOrId(Beatmap);
-            var beatmap = workingBeatmap.GetPlayableBeatmap(ruleset.RulesetInfo, difficultyAdjustmentMods);
+            var beatmap = workingBeatmap.GetPlayableBeatmap(ruleset.RulesetInfo, mods);
 
             var beatmapMaxCombo = GetMaxCombo(beatmap);
             var maxCombo = Combo ?? (int)Math.Round(PercentCombo / 100 * beatmapMaxCombo);
@@ -79,7 +78,7 @@ namespace PerformanceCalculator.Simulate
             var accuracy = GetAccuracy(statistics);
 
             var difficultyCalculator = ruleset.CreateDifficultyCalculator(workingBeatmap);
-            var difficultyAttributes = difficultyCalculator.Calculate(difficultyAdjustmentMods);
+            var difficultyAttributes = difficultyCalculator.Calculate(mods);
             var performanceCalculator = ruleset.CreatePerformanceCalculator();
 
             var ppAttributes = performanceCalculator?.Calculate(new ScoreInfo(beatmap.BeatmapInfo, ruleset.RulesetInfo)
