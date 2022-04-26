@@ -86,8 +86,10 @@ namespace PerformanceCalculator
                                       .Distinct()
                                       .ToHashSet();
 
-            allowedMods.Add(allMods.SingleOrDefault(m => m is ModHidden).GetType());
-
+            var hiddenMod = allMods.SingleOrDefault(m => m is ModHidden);
+            if (hiddenMod != null)
+                allowedMods.Add(hiddenMod.GetType());
+            
             var result = new List<Mod>();
 
             var classicMod = allMods.SingleOrDefault(m => m is ModClassic);
